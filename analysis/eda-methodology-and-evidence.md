@@ -2,7 +2,7 @@
 
 ## Purpose and analytical path
 
-I used the supplied Metro A shift, booking, and cancellation logs to identify a pilotable reliability problem and to set a starting rule for the anonymized portfolio proposal. The evidence progresses from the full Metro A baseline to booking timing, a timing check that removes repeat-booking histories, and a time-aware HCP-history screen. I retained the analyses that changed the proposal. I excluded the wider exploratory catalog because it did not change the recommendation.
+I used the supplied Metro A shift, booking, and cancellation logs to identify a pilotable reliability problem and to set a starting rule for the anonymized portfolio proposal. The evidence progresses from the full Metro A baseline to booking timing, a timing check that removes repeat-booking histories, and a time-aware HCP-history screen. The issue tree preserves the wider hypothesis catalog and records how each branch was handled. This evidence log keeps the analyses that changed the proposal.
 
 The source population for shift-level analysis is all 41,040 Metro A Shift IDs in the supplied shift log. Booking and cancellation logs have event-level grain and cover a broader set of Shift IDs, so a shift-level calculation includes only events whose Shift ID appears in that Metro A population. A late cancellation means an HCP cancellation recorded less than 24 hours before the scheduled shift start. NCNS is a separate logged outcome.
 
