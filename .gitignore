@@ -1,0 +1,25 @@
+.DS_Store
+.~lock.*#
+*.lock
+*.pyc
+__pycache__/
+.ipynb_checkpoints/
+.venv/
+
+# Local render folders and temporary exports
+tmp/
+**/tmp/
+**/*render*/
+*.tmp
+*.tmp.*
+*.export.*
+**/repeatable_inputs/
+
+# Inspection outputs
+*.inspect.*
+
+# Operating-system metadata
+Thumbs.db
+
+# Private assessment source data
+data/raw/*.xlsx
