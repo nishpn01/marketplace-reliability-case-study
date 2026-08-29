@@ -43,7 +43,10 @@ denominators, validation checks, and limitations; its [DOCX reading
 copy](analysis/eda-methodology-and-evidence.docx) contains the same record.
 The [public workbook](analysis/workbook/Marketplace_Reliability_Aggregate_Analysis.xlsx)
 starts from aggregate evidence and uses visible formulas to reproduce the
-published calculations.
+published calculations. Its eight sheets document the data-preparation path,
+the full screening set, selected timing and HCP-history analyses, dispositions,
+and reconciliation checks. The summary and selected-analysis sheets are laid
+out for portfolio screenshots.
 
 ## Tools
 
@@ -74,7 +77,7 @@ generalized to other markets without a new baseline and history check.
 | Path | Contents |
 | --- | --- |
 | [`analysis/`](analysis/) | Issue tree and methodology/evidence record in Markdown and DOCX. |
-| [`analysis/workbook/`](analysis/workbook/) | Aggregate-only, formula-backed analysis workbook. |
+| [`analysis/workbook/`](analysis/workbook/) | Aggregate-only, formula-backed workbook with a portfolio summary, analysis trail, charts, and checks. |
 | [`data/raw/`](data/raw/) | Documentation for the withheld source-data layer. |
 | [`data/clean/`](data/clean/) | Documentation for the withheld prepared-data layer. |
 | [`report/`](report/) | Anonymized portfolio proposal PDF. |
