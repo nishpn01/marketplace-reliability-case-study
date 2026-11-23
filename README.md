@@ -1,103 +1,67 @@
-# Marketplace reliability case study
+# Marketplace Reliability Case Study
 
-This is an anonymized portfolio edition of a take-home case. It examines late
-healthcare-professional cancellations in MarketplaceCo, a healthcare staffing
-marketplace that matches qualified healthcare professionals with open shifts
-at healthcare facilities in Metro A. The question is whether a different
-booking order can reduce late cancellations on shifts that are 24 to less than
-72 hours from start, without hurting fill, time to fill, no-call/no-show rate,
-or access.
+This anonymized case study uses time-aware cohort analysis and observational risk segmentation to ask how a healthcare staffing marketplace could reduce late professional cancellations without hurting fill rate, time to fill, no-call/no-show rate, or access. I analyzed 41,040 Metro A shifts from supplied operational logs, checked denominators and data quality across shift- and event-grain records, identified a 24-to-under-72-hour booking window with the highest observed late-cancellation rate, and designed a 16-week randomized pilot with a primary metric and guardrails. The public edition keeps aggregate evidence and formula-backed checks; row-level records are not redistributed.
 
-The project files are organized into the [portfolio proposal](report/), [issue
-tree](analysis/issue-tree.md), [data documentation](data/), and [aggregate
-workbook](analysis/workbook/).
+**Start here:** the [portfolio proposal](report/Marketplace_Reliability_Portfolio_Proposal.pdf), [evidence record](analysis/eda-methodology-and-evidence.md), and [formula-backed aggregate workbook](analysis/workbook/Marketplace_Reliability_Aggregate_Analysis.xlsx).
 
-## The problem
+## What this demonstrates
 
-Late cancellations leave facilities with less time to replace coverage. In the
-Metro A analysis population, 2,486 of 41,040 shifts had a late
-healthcare-professional cancellation, a 6.06% shift-level rate.
-No-call/no-show affected 1,253 shifts, or 3.05%.
-
-The 24 to less than 72 hour booking window was the clearest area to test. It had the highest observed late-cancellation rate in both timing checks:
-
-| Timing view | Population and denominator | Late-cancellation rate |
+| Concept | How it is implemented | Where to inspect it |
 | --- | --- | --- |
-| First recorded booking | 205 late-cancellation shifts out of 1,505 shifts first booked 24 to <72 hours before start | 13.62% |
-| One-booking shifts | 163 late-cancellation shifts out of 1,427 shifts with one booking in the same window | 11.42% |
+| Time-aware cohort analysis | Compares booking-time cohorts and pre-booking professional history while preserving shift- and event-grain denominators | [`analysis/eda-methodology-and-evidence.md`](analysis/eda-methodology-and-evidence.md) |
+| Denominator and data-quality checks | Validates outcome totals, timing-band totals, event chronology, and the target booking population | [`analysis/eda-methodology-and-evidence.md`](analysis/eda-methodology-and-evidence.md) |
+| Observational risk segmentation | Uses only history available before booking to separate historical risk groups, without treating the comparison as causal | [`analysis/eda-methodology-and-evidence.md`](analysis/eda-methodology-and-evidence.md), [`analysis/issue-tree.md`](analysis/issue-tree.md) |
+| Randomized pilot design | Converts observational evidence into a 16-week pilot with treatment, control, a primary decision threshold, and guardrails | [`report/`](report/), [`analysis/issue-tree.md`](analysis/issue-tree.md) |
+| Spreadsheet analysis | Eight-sheet aggregate-only workbook uses visible formulas to reproduce published calculations and checks | [`analysis/workbook/`](analysis/workbook/) |
+| Privacy-aware publication | Documents the withheld source and clean layers while exposing schemas, aggregate results, formulas, and method | [`data/`](data/), [`analysis/workbook/README.md`](analysis/workbook/README.md) |
 
-These comparisons are observational. They identify a target for a controlled test, not a causal effect.
+## How the analysis moves from signal to test
 
-## Approach
+```mermaid
+flowchart LR
+  S[41,040 Metro A shifts] --> B[Baseline: late cancellation + NCNS]
+  B --> T[Booking timing checks]
+  T --> W[24 to <72 hour window]
+  W --> H[Time-aware professional history screen]
+  H --> P[Randomized preferred-access pilot]
+  P --> G[Cancellation threshold + guardrails]
+```
 
-I used the supplied shift, booking, and cancellation logs to:
-
-1. establish the Metro A shift-level baseline;
-2. compare late-cancellation rates by booking lead time using two timing definitions;
-3. test whether healthcare-professional history available before booking separated later cancellation risk in the target window; and
-4. turn the findings into a randomized pilot with guardrails.
-
-The analysis used 41,040 Metro A Shift IDs for shift-level rates. [The evidence
-record](analysis/eda-methodology-and-evidence.md) documents the definitions,
-denominators, validation checks, and limitations; its [DOCX reading
-copy](analysis/eda-methodology-and-evidence.docx) contains the same record.
-The [public workbook](analysis/workbook/Marketplace_Reliability_Aggregate_Analysis.xlsx)
-starts from aggregate evidence and uses visible formulas to reproduce the
-published calculations. Its eight sheets document the data-preparation path,
-the full screening set, selected timing and HCP-history analyses, dispositions,
-and reconciliation checks. The summary and selected-analysis sheets are laid
-out for portfolio screenshots.
-
-## Tools
-
-I used OnlyOffice for pivot tables and spreadsheet review, Python for data profiling, preparation, and repeatable calculations, and Git and GitHub for version control.
+1. I defined the Metro A shift log as the 41,040-shift analysis population, then matched the broader event logs to those Shift IDs for shift-level rates.
+2. Late cancellation affected 2,486 shifts (6.06%); no-call/no-show affected 1,253 (3.05%). The outcomes remain separate because 67 shifts had both flags.
+3. I compared booking lead time in two ways to reduce ambiguity from repeat bookings. In the first-booking view, 205 of 1,505 shifts booked 24 to under 72 hours before start later had a late cancellation (13.62%). In the exactly-one-booking check, the same window was highest again: 163 of 1,427 shifts (11.42%).
+4. For 1,742 target-window booking decisions, I calculated professional history using only resolved shifts available before the booking. A screen of at least 10 prior resolved shifts and a prior late-cancellation rate below 10% identified 589 decisions, 44 of which later had a same-worker late cancellation (7.47%).
+5. I translated that signal into a pilot: qualifying professionals receive 30 minutes of preferred access; an unfilled shift returns to the wider qualified pool; control shifts retain the existing flow.
 
 ## Proposed pilot
 
-The proposal recommends a 16-week randomized Metro A pilot for open shifts
-entering the 24 to less than 72 hour window.
-
-| Group | Booking process |
+| Pilot element | Design |
 | --- | --- |
-| Treatment | Healthcare professionals with at least 10 prior resolved shifts and a prior late-cancellation rate below 10% receive 30 minutes of preferred access. Unfilled shifts return to the wider qualified pool. |
-| Control | Shifts follow the current booking process. |
+| Population | Metro A open shifts entering the 24-to-under-72-hour window |
+| Treatment | 30 minutes of preferred access for professionals with ≥10 prior resolved shifts and <10% prior late-cancellation rate |
+| Control | Existing booking process |
+| Duration | 16 weeks |
+| Primary decision threshold | 3.5 percentage-point treatment-control change in late cancellation |
+| Guardrails | No-call/no-show, fill rate, time to fill, and access for shorter-history professionals |
 
-The proposal uses the qualifying group's 7.47% historical late-cancellation rate as a benchmark, not a forecast. It specifies a 3.5-percentage-point treatment-control threshold and guardrails for no-call/no-show, fill rate, time to fill, and access for professionals with shorter histories.
+The 7.47% value is a historical benchmark for the proposed eligible group, not an expected treatment outcome. The workbook contains the reported aggregate numerators, denominators, formulas, sensitivity rows, and reconciliations.
 
-## Evidence and limitations
+## Repository map
 
-In the time-aware history analysis, 44 of 589 target-window bookings meeting the proposed screen had a later same-worker late cancellation, a 7.47% rate. The remaining 1,153 target-window bookings had a 15.70% rate. This supports testing the booking rule. It does not establish that screening or preferred access will reduce cancellations.
-
-The supplied records may omit earlier healthcare-professional activity, and
-some shifts have multiple booking events. The Metro A findings should not be
-generalized to other markets without a new baseline and history check.
-
-## Repository guide
-
-| Path | Contents |
+| Path | Purpose |
 | --- | --- |
-| [`analysis/`](analysis/) | Issue tree and methodology/evidence record in Markdown and DOCX. |
-| [`analysis/workbook/`](analysis/workbook/) | Aggregate-only, formula-backed workbook with a portfolio summary, analysis trail, charts, and checks. |
-| [`data/raw/`](data/raw/) | Documentation for the withheld source-data layer. |
-| [`data/clean/`](data/clean/) | Documentation for the withheld prepared-data layer. |
-| [`report/`](report/) | Anonymized portfolio proposal PDF. |
+| [`analysis/`](analysis/) | Issue tree and methodology/evidence record |
+| [`analysis/workbook/`](analysis/workbook/) | Aggregate-only workbook, formulas, checks, and workbook guide |
+| [`data/`](data/) | Source schema and documentation for withheld raw and clean layers |
+| [`report/`](report/) | Anonymized pilot proposal PDF |
 
-## Data used
+## Current status and limits
 
-| Public table name | Grain | Rows | Candidate key | Main field groups |
-| --- | --- | ---: | --- | --- |
-| Shift log | One row per posted shift | 41,040 | Shift ID | worker and facility IDs, scheduled start and end, role requirement, shift type, posting timestamp, worked or verified status, charge, duration |
-| Booking-event log | One row per booking action | 127,005 | Action ID | event timestamp, Shift ID, action type, worker and facility IDs, booking lead time |
-| Cancellation-event log | One row per cancellation or NCNS action | 78,073 | Action ID | event timestamp, Shift ID, action type, worker and facility IDs, scheduled start, cancellation lead time |
+- The timing and history comparisons are observational; they select a testable window and rule, not a causal effect or pilot forecast.
+- Event logs cover more records than the Metro A shift log, so shift-level rates use only matching Metro A Shift IDs.
+- Some shifts have multiple booking events and earlier professional history may be incomplete.
+- Before launch, the marketplace should refresh the baseline, confirm data completeness and sample size, and keep eligibility rules fixed during the test.
 
-See the [public source schema](data/source-schema.md) for field definitions,
-relationships, and aggregate-level quality notes.
+## Ownership
 
-## Data availability
-
-The analysis used row-level files supplied for the assessment. Redistribution
-permission was not provided, so this portfolio edition does not include source
-records or row-level cleaned derivatives. The public workbook begins from the
-aggregate evidence documented in the evidence record; it is not a replacement
-for the private ETL pipeline. The data folders provide the source schema and
-explain the separation of the withheld source and prepared layers.
+I developed the analytical method, pilot design, aggregate workbook, and public evidence record.
